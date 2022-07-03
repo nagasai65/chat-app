@@ -1,5 +1,5 @@
 import { makeStyles } from "@mui/styles";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   SEND_BUTTON_COLOR,
   TEXT_BOX_BORDER,
@@ -52,13 +52,9 @@ const useStyles = makeStyles({
   },
 });
 
-export const ChatBottomView = ({ buddyId, userId }) => {
-  const styles = useStyles();
-  const dispatch = useDispatch();
-
-  const [text, setText] = useState();
-
-  const sendMessage = () => {
+const sendMessage =
+  ({ setText, dispatch, buddyId, userId }) =>
+  () => {
     setText((prevText) => {
       dispatch(
         sendMessageAction({
@@ -71,15 +67,26 @@ export const ChatBottomView = ({ buddyId, userId }) => {
     });
   };
 
-  const handleInput = (e) => {
-    console.log(e);
-    if (e.key === "Enter") {
-      sendMessage();
-      return;
-    }
+export const ChatBottomView = ({ buddyId, userId }) => {
+  const styles = useStyles();
+  const dispatch = useDispatch();
 
+  const [text, setText] = useState();
+
+  const handleInput = (e) => {
     setText(e.target.value);
   };
+
+  const Button = useCallback(() => {
+    return (
+      <button
+        className={styles.sendButton}
+        onClick={sendMessage({ setText, buddyId, dispatch, userId })}
+      >
+        Send <img alt="" className={styles.sendIcon} src={sendIcon} />
+      </button>
+    );
+  }, [buddyId, dispatch, styles, userId]);
 
   return (
     <div className={styles.bottomView}>
@@ -90,10 +97,7 @@ export const ChatBottomView = ({ buddyId, userId }) => {
         placeholder="Enter your message here"
         onChange={handleInput}
       />
-
-      <button className={styles.sendButton} onClick={sendMessage}>
-        Send <img alt="" className={styles.sendIcon} src={sendIcon} />
-      </button>
+      <Button />
     </div>
   );
 };
